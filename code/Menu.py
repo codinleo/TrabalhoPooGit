@@ -2,7 +2,6 @@ import pygame
 import sys
 from code.ScoreManager import ScoreManager
 
-
 class Menu:
     """
     Classe responsável pela interface inicial do jogo, exibição de pontuações,
@@ -16,8 +15,9 @@ class Menu:
 
         # --- CARREGAMENTO VISUAL ---
         try:
-            # Carrega e redimensiona a imagem de fundo para preencher a tela
-            self.bg_image = pygame.image.load("asset/City2.png").convert()
+            # AJUSTE: sys.resource_path adicionado para compatibilidade com executável
+            bg_path = sys.resource_path("asset/City2.png")
+            self.bg_image = pygame.image.load(bg_path).convert()
             self.bg_image = pygame.transform.scale(self.bg_image, (self.width, self.height))
         except Exception as e:
             print(f"Erro ao carregar City2.png: {e}")
@@ -28,7 +28,9 @@ class Menu:
         try:
             # Inicia a trilha sonora caso ainda não esteja tocando
             if not pygame.mixer.music.get_busy():
-                pygame.mixer.music.load('asset/BackgroundMedievalSong.wav')
+                # AJUSTE: sys.resource_path adicionado aqui também
+                music_path = sys.resource_path('asset/BackgroundMedievalSong.wav')
+                pygame.mixer.music.load(music_path)
                 pygame.mixer.music.set_volume(0.1)
                 pygame.mixer.music.play(-1)
         except:

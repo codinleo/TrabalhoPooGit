@@ -1,5 +1,6 @@
 import pygame
 import random
+import sys  # Necessário para acessar sys.resource_path
 
 
 # --- CLASSE BASE (ABSTRATA) PARA TODAS AS ENTIDADES DO JOGO ---
@@ -18,7 +19,10 @@ class Entity(pygame.sprite.Sprite):
         Recorta a imagem em partes iguais e redimensiona.
         """
         try:
-            sprite_sheet = pygame.image.load(path).convert_alpha()
+            # AJUSTE: sys.resource_path aplicado ao caminho da folha de sprites
+            full_path = sys.resource_path(path)
+            sprite_sheet = pygame.image.load(full_path).convert_alpha()
+
             frame_width = sprite_sheet.get_width() // num_frames  # Calcula largura de cada frame
             sheet_height = sprite_sheet.get_height()
             frames = []
@@ -34,7 +38,7 @@ class Entity(pygame.sprite.Sprite):
         except Exception as e:
             print(f"Erro ao carregar {path}: {e}")
             # Caso a imagem falhe, retorna um quadrado rosa (placeholder de erro)
-            surf = pygame.Surface((64, 64));
+            surf = pygame.Surface((64, 64))
             surf.fill((255, 0, 255))
             return [surf]
 
@@ -53,7 +57,6 @@ class Entity(pygame.sprite.Sprite):
             else:
                 self.frame_index = 0  # Reinicia o loop (ex: caminhada)
 
-            # Garantia extra para evitar erro de índice
             if self.frame_index >= len(animation): self.frame_index = 0
 
         img = animation[int(self.frame_index)]
@@ -69,7 +72,6 @@ class Entity(pygame.sprite.Sprite):
 class Player(Entity):
     def __init__(self, x, y):
         super().__init__(x, y)
-        # Carrega todas as animações do cavaleiro
         self.animations = {
             'idle': self.load_animation('asset/knightIdle.png', 4),
             'run': self.load_animation('asset/knightRun.png', 7),
@@ -84,10 +86,10 @@ class Player(Entity):
         self.score = 0
 
     def update(self):
-        self.animate()  # Atualiza a animação a cada frame do jogo
+        self.animate()
 
 
-# --- CLASSE DO INIMIGO COMUM (LOBISOMEM PRETO) ---
+# --- CLASSE DO INIMIGO COMUM ---
 class EnemyB(Entity):
     def __init__(self, x, y):
         super().__init__(x, y)
@@ -104,22 +106,18 @@ class EnemyB(Entity):
         self.hp = 40
 
     def update(self, player_rect):
-        """Lógica de IA para seguir o jogador."""
         self.animate()
         dist_x = player_rect.centerx - self.rect.centerx
         dist_y = player_rect.centery - self.rect.centery
 
         if self.status in ['walk', 'run']:
-            # Define se deve correr ou andar baseado na distância
             self.status = 'run' if abs(dist_x) > 250 else 'walk'
 
-            # Se estiver longe do jogador, se move nos eixos X e Y
             if abs(dist_x) > 50 or abs(dist_y) > 20:
                 self.direction = 1 if dist_x > 0 else -1
                 if abs(dist_x) > 50: self.rect.x += self.speed * self.direction
                 if abs(dist_y) > 20: self.rect.y += self.speed * (1 if dist_y > 0 else -1)
             else:
-                # Se estiver perto o suficiente, inicia o ataque
                 self.status = 'run_attack' if self.status == 'run' else 'attack1'
                 self.frame_index = 0
 
@@ -129,7 +127,6 @@ class Luci(Entity):
     def __init__(self, x, y):
         super().__init__(x, y)
         self.status = 'idle'
-        # Carrega animações com escala maior (2.5) para o Boss ser imponente
         self.animations = {
             'idle': self.load_animation('asset/MainEnemyIdle.png', 6, 2.5),
             'walk': self.load_animation('asset/MainEnemyWalk.png', 12, 2.5),
@@ -139,13 +136,12 @@ class Luci(Entity):
         }
         self.image = self.animations[self.status][self.frame_index]
         self.rect = self.image.get_rect(center=(x, y))
-        self.speed = 1.5  # Boss é mais lento, porém mais forte
+        self.speed = 1.5
         self.max_hp = 200
         self.hp = 200
 
     def update(self, player_rect):
         self.animate()
-        # IA do Boss: segue o jogador apenas se não estiver atacando ou sofrendo dano
         if self.status not in ['attack', 'hurt', 'dead']:
             dist_x = player_rect.centerx - self.rect.centerx
             dist_y = player_rect.centery - self.rect.centery
@@ -155,6 +151,5 @@ class Luci(Entity):
                 if abs(dist_x) > 70: self.rect.x += self.speed * self.direction
                 if abs(dist_y) > 30: self.rect.y += self.speed * (1 if dist_y > 0 else -1)
             else:
-                # Ataque do Boss
                 self.status = 'attack'
                 self.frame_index = 0

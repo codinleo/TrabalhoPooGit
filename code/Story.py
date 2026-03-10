@@ -1,5 +1,5 @@
 import pygame
-
+import sys # Importado para manter o padrão de compatibilidade
 
 class Story:
     """

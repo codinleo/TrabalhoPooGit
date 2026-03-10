@@ -1,5 +1,6 @@
 import pygame
 import random
+import sys  # Necessário para acessar sys.resource_path
 from code.Parallax import Parallax
 from code.Entity import Player, EnemyB, Luci
 from code.ScoreManager import ScoreManager
@@ -30,14 +31,16 @@ class Level:
         self.end_game_timer = 0  # Tempo de exibição da mensagem final
         self.game_result = ""  # Armazena se o jogador ganhou ou perdeu
 
-        # Inicialização do sistema de áudio
+        # --- AJUSTE: Inicialização do sistema de áudio com resource_path ---
         try:
-            self.punch_sound = pygame.mixer.Sound('asset/punch.wav')
-            self.kick_sound = pygame.mixer.Sound('asset/kick.wav')
-            pygame.mixer.music.load('asset/BackgroundMedievalSong.wav')
+            self.punch_sound = pygame.mixer.Sound(sys.resource_path('asset/punch.wav'))
+            self.kick_sound = pygame.mixer.Sound(sys.resource_path('asset/kick.wav'))
+
+            pygame.mixer.music.load(sys.resource_path('asset/BackgroundMedievalSong.wav'))
             pygame.mixer.music.set_volume(0.1)
             pygame.mixer.music.play(-1)  # Loop infinito
-        except:
+        except Exception as e:
+            print(f"Aviso: Erro ao carregar sons no Level: {e}")
             self.punch_sound = self.kick_sound = None
 
     def draw_hud(self):
@@ -89,13 +92,11 @@ class Level:
         if self.game_result != "" or self.start_timer > 0: return
 
         if self.player.score < 80:
-            # Fase de inimigos comuns
             if len(self.enemies) < 3:
                 e = EnemyB(1400, 450 + random.randint(-50, 50))
                 self.enemies.add(e)
                 self.all_sprites.add(e)
         elif self.player.score >= 80 and not self.boss_spawned:
-            # Transição para o Boss: remove inimigos menores e cria Luci
             for e in self.enemies: e.kill()
             self.boss_reference = Luci(1400, 450)
             self.enemies.add(self.boss_reference)
@@ -106,10 +107,8 @@ class Level:
         """Método principal do nível executado a cada frame."""
         self.spawn_enemy()
 
-        # Define status padrão se não estiver em ação prioritária
         if self.player.status not in ['attack', 'hurt']: self.player.status = 'idle'
 
-        # Captura de Eventos (Teclado e Mouse)
         for event in pygame.event.get():
             if event.type == pygame.QUIT: return "QUIT"
             if self.start_timer <= 0 and self.game_result == "":
@@ -118,9 +117,8 @@ class Level:
                         self.player.status = 'attack'
                         self.player.frame_index = 0
                         if self.punch_sound: self.punch_sound.play()
-                        self.attack()  # Executa a lógica de colisão do ataque
+                        self.attack()
 
-        # Movimentação do Jogador
         if self.start_timer <= 0 and self.game_result == "":
             keys = pygame.key.get_pressed()
             moving = False
@@ -133,33 +131,27 @@ class Level:
                 if keys[pygame.K_s]: self.player.rect.y += v; moving = True
                 if moving: self.player.status = 'run'
 
-        # Atualização de Lógica de todos os sprites
         self.player.update()
         self.enemies.update(self.player.rect)
 
-        # Verificação de colisão: Inimigos causando dano no Jogador
         for e in self.enemies:
-            # inflate reduz a caixa de colisão para ser mais justa visualmente
             if self.player.rect.inflate(-80, -40).colliderect(e.rect.inflate(-80, -40)):
                 if self.player.status != 'attack' and self.game_result == "":
                     self.player.hp -= 0.3
                     if self.player.status != 'hurt': self.player.status = 'hurt'
 
-        # Renderização da Cena
         self.parallax.draw(self.scroll)
         self.all_sprites.draw(self.screen)
         self.draw_hud()
         self.draw_messages()
 
-        # Score no canto superior esquerdo
         font_score = pygame.font.SysFont("Arial", 25, bold=True)
         score_surf = font_score.render(f"Score: {self.player.score}", True, (0, 255, 0))
         self.screen.blit(score_surf, (50, 60))
 
-        # --- Verificação de Condições de Término ---
         if self.player.hp <= 0 and self.game_result == "":
             self.game_result = "LOSE"
-            self.end_game_timer = 180  # 3 segundos de exibição
+            self.end_game_timer = 180
             pygame.mixer.music.stop()
 
         if self.boss_spawned and not self.boss_reference.alive() and self.game_result == "":
@@ -167,7 +159,6 @@ class Level:
             self.end_game_timer = 180
             pygame.mixer.music.stop()
 
-        # Se o jogo acabou, espera o timer e retorna ao Menu
         if self.game_result != "":
             self.end_game_timer -= 1
             if self.end_game_timer <= 0:
@@ -178,7 +169,6 @@ class Level:
 
     def attack(self):
         """Verifica se o ataque do jogador atingiu algum inimigo."""
-        # Cria uma área de ataque estendida à frente do jogador
         attack_rect = self.player.rect.inflate(100, 50)
         for enemy in self.enemies:
             if attack_rect.colliderect(enemy.rect):
@@ -186,6 +176,5 @@ class Level:
                     dano = 10 if not isinstance(enemy, Luci) else 5
                     enemy.hp -= dano
                     if enemy.hp <= 0:
-                        # Pontuação baseada no tipo de inimigo derrotado
                         self.player.score += 10 if not isinstance(enemy, Luci) else 100
                         enemy.kill()
