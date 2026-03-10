@@ -26,7 +26,7 @@ class Menu:
 
         # --- SISTEMA DE ÁUDIO ---
         try:
-            # Inicia a trilha sonora caso ainda não esteja tocando
+            # Inicia a trilha sonora caso ainda não esteja tocando.
             if not pygame.mixer.music.get_busy():
                 # AJUSTE: sys.resource_path adicionado aqui também
                 music_path = sys.resource_path('asset/BackgroundMedievalSong.wav')

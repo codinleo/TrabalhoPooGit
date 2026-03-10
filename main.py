@@ -22,7 +22,7 @@ def resource_path(relative_path):
 # globalmente em todos os outros scripts do projeto.
 sys.resource_path = resource_path
 
-# importar o Game
+# importar o Game.
 from code.Game import Game
 
 if __name__ == "__main__":

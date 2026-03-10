@@ -30,7 +30,7 @@ class ScoreManager:
         """
         Lê o arquivo de pontuações, ordena os dados e retorna os 5 melhores resultados.
         """
-        # Se o arquivo ainda não existe (primeiro jogo), retorna uma lista vazia
+        # Se o arquivo ainda não existe (primeiro jogo), retorna uma lista vazia.
         if not os.path.exists(self.file_path):
             return []
 

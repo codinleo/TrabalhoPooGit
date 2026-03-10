@@ -28,7 +28,7 @@ class Parallax:
         O parâmetro 'scroll' vem da movimentação do jogador no Level.
         """
         for img, speed in self.layers:
-            # Calcula o deslocamento da camada atual
+            # Calcula o deslocamento da camada atual.
             # O operador '%' (módulo) garante que o valor do offset nunca ultrapasse a largura da imagem
             offset = (scroll * speed) % self.width
 

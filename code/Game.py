@@ -58,7 +58,7 @@ class Game:
                 # Executa a lógica do nível (movimentação, combate, HUD)
                 self.state = self.level.run()
 
-                # Transição: Se o jogador morrer ou vencer e voltar ao Menu
+                # Transição: Se o jogador morrer ou vencer e voltar ao Menu.
                 if self.state == "MENU":
                     self.level = None  # Destrói o nível atual para liberar memória e resetar o progresso
                     self.story = Story(self.screen)  # Reinicia o objeto da história para uma nova partida

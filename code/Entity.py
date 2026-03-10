@@ -1,6 +1,6 @@
 import pygame
 import random
-import sys  # Necessário para acessar sys.resource_path
+import sys  # Necessário para acessar sys.resource_path.
 
 
 # --- CLASSE BASE (ABSTRATA) PARA TODAS AS ENTIDADES DO JOGO ---

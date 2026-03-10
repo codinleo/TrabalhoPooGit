@@ -1,6 +1,6 @@
 import pygame
 import random
-import sys  # Necessário para acessar sys.resource_path
+import sys  # Necessário para acessar sys.resource_path.
 from code.Parallax import Parallax
 from code.Entity import Player, EnemyB, Luci
 from code.ScoreManager import ScoreManager
